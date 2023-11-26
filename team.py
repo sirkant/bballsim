@@ -13,8 +13,8 @@ class Team:
         if len(self.roster) < 15:
             self.roster.append(player)
             self.calculateTeamHeight()
-        else:
-            print("Roster is full. Cannot add more players.")
+        # else:
+            # print("Roster is full. Cannot add more players.")
 
     def removePlayer(self, player):
         if player in self.roster:

@@ -19,7 +19,7 @@ class League:
 
     def initialize_teams(self, dbmanager, current_season):
         for team_id, team in self.teams.items():
-            team_players_data = self.db_manager.get_players_by_team(team_id)
+            team_players_data = self.db_manager.get_players_by_team(team_id,current_season)
             existing_player_ids = set()
 
             for player_tuple in team_players_data:
@@ -45,7 +45,6 @@ class League:
                 player = Player.create_from_db(dbmanager, player_data, current_season)
                 team.addPlayer(player)
                 existing_player_ids.add(player_id)
-                #print(f"Added {player.name} to {team.teamName}")
 
     def simulate_season(self):
         # Simulate season games here

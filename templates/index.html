@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bball Sim v0.1</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="sidebar">
+        <ul>
+            {% for team_id, team in teams.items() %}
+            <li><a href="#" class="team-link" data-team-id="{{ team_id }}">{{ team.teamName }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div id="content">
+        <h1>Welcome to the Basketball Simulator v0.1</h1>
+        <p>Select a team to view details</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

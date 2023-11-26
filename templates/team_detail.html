@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ team.teamName }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="sidebar">
+        <!-- Same sidebar as index.html -->
+    </div>
+    <div id="content">
+        <h1>{{ team.teamName }}</h1>
+        <table>
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th class="sortable" data-sort="name">Name</th>
+                    <th class="sortable" data-sort="position">Position</th>
+                    <th>Height</th>
+                    <th>Weight</th>
+                    <th>College</th>
+                    <th>Contract</th>
+                    <!-- Add more headers based on the player's data -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in team.roster %}
+                <tr>
+                    <td><img src="{{ player.imgURL }}" alt="{{ player.name }}" style="width:100px; height:75px; center"></td>
+                    <td>{{ player.name }}</td>
+                    <td>{{ player.pos }}</td>
+                    <td>{{ player.hgt }}</td>
+                    <td>{{ player.weight }}</td>
+                    <td>{{ player.college }}</td>
+                    <td>{% if player.contract.amount %}
+                        ${{ "%.2f"|format(player.contract.amount/1000) }}/yr until {{ player.contract.exp }}
+                        {% else %}
+                            N/A
+                        {% endif %}</td>
+                    <!-- Add more player data columns here as needed -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

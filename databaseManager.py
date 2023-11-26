@@ -2,8 +2,8 @@ import sqlite3
 
 class DatabaseManager:
     def __init__(self, db_path):
-        self.conn = sqlite3.connect(db_path)
-        self.create_tables()
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
+        self.drop_and_create_tables()
 
     def create_tables(self):
         """ Create tables in the database """
@@ -101,6 +101,15 @@ class DatabaseManager:
     # Insert methods for each table need to be created here
     def insert_player(self, player):
         try:
+            # Check if player already exists in the database
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT id FROM players WHERE name = ? AND born_year = ?", (player.name, player.born_year))
+            existing_player = cursor.fetchone()
+
+            if existing_player:
+                # print(f"Player {player.name} (born in {player.born_year}) already exists in the database.")
+                return  # Skip inserting this player as they already exist
+
             # Handle missing 'injury' attribute
             injury_type = player.injury['type'] if hasattr(player, 'injury') else 'Healthy'
             injury_games_remaining = player.injury['gamesRemaining'] if hasattr(player, 'injury') else 0
@@ -110,20 +119,19 @@ class DatabaseManager:
                 self.conn.execute('''INSERT INTO players 
                                      (name, pos, hgt, weight, born_year, born_loc, imgURL, college, injury_type, injury_games_remaining, tid)
                                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                                  (player.name, player.pos, player.hgt, player.weight, player.born['year'],
-                                   player.born['loc'], player.imgURL, player.college, injury_type,
+                                  (player.name, player.pos, player.hgt, player.weight, player.born_year,
+                                   player.born_loc, player.imgURL, player.college, injury_type,
                                    injury_games_remaining, player.tid))
 
                 player_id = self.conn.execute('SELECT last_insert_rowid()').fetchone()[0]
 
                 # Handle missing 'contract' attribute for free agents or draft prospects
-                if hasattr(player, 'contract'):
-                    contract = player.contract
-                    rookie_status = contract.get('rookie', 0)
+                if player.contract:
                     self.conn.execute('''INSERT INTO contracts 
                                          (player_id, amount, exp, rookie)
                                          VALUES (?, ?, ?, ?)''',
-                                      (player_id, contract['amount'], contract['exp'], rookie_status))
+                                      (player_id, player.contract.get('amount'), player.contract.get('exp'),
+                                       int(player.contract.get('rookie', False))))
 
                 # Insert into ratings table
                 if hasattr(player, 'ratings'):
@@ -138,11 +146,32 @@ class DatabaseManager:
                                            rating['pss'], rating['reb']))
 
                 # Insert other related data (stats, etc.) similarly
-                # ...
-                # print(f"Inserting player: {player.name}, Position: {player.pos}, Height: {player.hgt}, ...")
+                if hasattr(player, 'stats'):
+                    for stat in player.stats:
+                        self.conn.execute('''INSERT INTO stats 
+                                            (player_id, season, playoffs, gp, gs, min, fg, fga, tp, tpa, ft, fta, orb, drb, ast, stl, blk, tov, pf, pts, pm, pm100, onOff100, per, ortg, drtg, orbp, drbp, trbp, astp, stlp, blkp, usgp, ows, dws, obpm, dbpm, vorp, ewa, dd, td)
+                                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                                            (player_id, stat['season'], stat.get('playoffs', False), stat['gp'],
+                                            stat['gs'], stat['min'], stat['fg'], stat['fga'], stat['tp'],
+                                            stat['tpa'], stat['ft'], stat['fta'], stat['orb'], stat['drb'],
+                                            stat['ast'], stat['stl'], stat['blk'], stat['tov'], stat['pf'],
+                                            stat['pts'], stat['pm'], stat['pm100'], stat['onOff100'],
+                                            stat['per'], stat['ortg'], stat['drtg'], stat['orbp'], stat['drbp'],
+                                            stat['trbp'], stat['astp'], stat['stlp'], stat['blkp'], stat['usgp'],
+                                            stat['ows'], stat['dws'], stat['obpm'], stat['dbpm'], stat['vorp'],
+                                            stat['ewa'], stat['dd'], stat['td']))
+                #print(f"Inserting player: {player.name}, Position: {player.pos}, Height: {player.hgt}, ...")
 
         except KeyError as e:
-            print(f"Error processing player: {player.name}. Missing key: {e}")
+            pass
+            # print(f"Error processing player: {player.name}. Missing key: {e}")
+        except sqlite3.IntegrityError as e:
+            print(f"Integrity error: {e}")
+        except sqlite3.Error as e:
+            print(f"SQLite error: {e}")
+        except Exception as e:
+            pass
+            # print(f"General error: {e}")
 
     def get_all_players(self):
         """ Retrieve all players from the database """
@@ -154,7 +183,7 @@ class DatabaseManager:
                                        ''')
             return cursor.fetchall()
 
-    def get_players_by_team(self, team_id):
+    def get_players_by_team(self, team_id, season_year):
         """ Retrieve players from the database based on team ID """
         with self.conn:
             cursor = self.conn.execute('''SELECT * FROM players
@@ -258,3 +287,35 @@ class DatabaseManager:
             return dict(zip(keys, row))
         else:
             return None
+
+    def get_all_player_ids(self):
+        """ Retrieve name and born year of all players from the database """
+        with self.conn:
+            cursor = self.conn.execute("SELECT name, born_year FROM players")
+            return cursor.fetchall()
+
+    def get_player_contract_from_db(self, player_id):
+        with self.conn:
+            try:
+                cursor = self.conn.execute(f"""
+                SELECT amount, exp, rookie 
+                FROM contracts 
+                WHERE player_id = {player_id}
+                """)
+
+                result = cursor.fetchone()
+
+                if result:
+                    contract = {
+                        'amount': result[0],
+                        'exp': result[1],
+                        'rookie': result[2] == 1  # Assuming 1 for True, 0 for False
+                    }
+                    return contract
+                else:
+                    return None  # Or some default value or behavior
+            except sqlite3.Error as e:
+                print(f"Database error: {e}")
+            except Exception as e:
+                print(f"Exception in query: {e}")
+
