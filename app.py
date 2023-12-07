@@ -3,6 +3,9 @@ from main import Game
 import threading
 import webbrowser
 import time
+import random
+import constants
+from match import Match
 
 app = Flask(__name__)
 game = Game(2024)
@@ -10,7 +13,6 @@ game = Game(2024)
 @app.route('/')
 def index():
     teams = game.nba_league.teams
-    print(teams)
     return render_template('index.html', teams=teams)
 
 @app.route('/players/count')
@@ -35,6 +37,56 @@ def team_details(team_id):
     else:
         # Handle the error or redirect
         return "Team not found", 404
+
+@app.route('/player/<int:player_id>')
+def player_details(player_id):
+    player_info = game.get_player_details(player_id)
+    if player_info:
+        return render_template('player_detail.html', player=player_info)
+    else:
+        return "Player not found", 404
+
+@app.route('/play_match')
+def play_match():
+    teams_list = list(game.nba_league.teams.values())
+    try:
+        teams = random.sample(teams_list, 2)  # Randomly select two teams
+        match = Match(teams)
+        match_result = match.run()  # Assuming run method returns final stats
+
+        # Create a dictionary to map team names to their stats
+        stats_dict = {
+            teams[0].teamName: match_result[teams[0].teamName],
+            teams[1].teamName: match_result[teams[1].teamName]
+        }
+
+        return render_template('match_result.html', team_stats=stats_dict)
+    except TypeError as e:
+        print("Error selecting teams:", e)
+        return "An error occurred in team selection", 500
+
+@app.route('/play_match_denver')
+def play_match_denver():
+    teams_list = list(game.nba_league.teams.values())
+    try:
+        teams = teams_list[7], teams_list[19]  # Randomly select two teams
+        match = Match(teams)
+        match_result = match.run()  # Assuming run method returns final stats
+
+        # Create a dictionary to map team names to their stats
+        stats_dict = {
+            teams[0].teamName: match_result[teams[0].teamName],
+            teams[1].teamName: match_result[teams[1].teamName]
+        }
+
+        return render_template('match_result.html', team_stats=stats_dict)
+    except TypeError as e:
+        print("Error selecting teams:", e)
+        return "An error occurred in team selection", 500
+
+
+
+
 
 
 

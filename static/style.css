@@ -1,8 +1,8 @@
 /* Basic styling; expand as necessary */
 body {
     font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
+    margin: 20px;
+    padding: 20px;
     box-sizing: border-box;
 }
 
@@ -71,4 +71,8 @@ td img {
 table th:nth-child(1),
 table td:nth-child(1) {
     width: 60px; /* slightly wider than the image for padding */
+}
+
+.centered-title {
+    text-align: center;
 }

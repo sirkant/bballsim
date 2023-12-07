@@ -1,0 +1,28 @@
+<!-- base.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Bball Sim</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+  <div id="sidebar">
+    <ul>
+      {% for team_id, team in teams.items() %}
+      <li><a href="#" class="team-link" data-team-id="{{ team_id }}">{{ team.teamName }}</a></li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  {% block content %}{% endblock %}
+
+</body>
+
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ player.name }} - Bball Sim v0.1</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .player-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 20px;
+        }
+        .player-info {
+            flex-basis: 50%;
+            padding-left: 20px;
+            padding-top: 20px;
+        }
+        .ratings-table {
+            flex-basis: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .ratings-table table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .ratings-table th, .ratings-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="player-info">
+            <h1>{{ player.name }}</h1>
+            <img src="{{ player.imgURL }}" alt="{{ player.name }}" style="max-width: 100%; height: auto;">
+            <p>Position: {{ player.pos }}</p>
+            <p>Height: {{ player.hgt }}</p>
+            <p>Weight: {{ player.weight }}</p>
+            <p>College: {{ player.college }}</p>
+            <!-- More player attributes -->
+        </div>
+        <h2>Ratings</h2>
+         <div class="ratings-table">
+            <div>
+                <table>
+                    <tbody>
+                        {% for key, value in player.ratings.items() %}
+                        {% if loop.index is odd %}
+                        <tr>
+                            <td>{{ key }}</td>
+                            <td>{{ value }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+    <h2>Historical Stats</h2>
+             <div class="historical-stats-table">
+                 <table>
+        <thead>
+            <tr>
+                <th>Season</th>
+                <!-- Add headers for each stat like points, rebounds, etc. -->
+                <th>Points</th>
+                <th>Rebounds</th>
+                <th>Assists</th>
+                <!-- Add more stat headers as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for season_stats in player.stats %}
+            <tr>
+                <td>{{ season_stats.season }}</td>
+                <td>{{ season_stats.points }}</td>
+                <td>{{ season_stats.rebounds }}</td>
+                <td>{{ season_stats.assists }}</td>
+                <!-- Add more stat data as needed -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+             </div>
+
+</body>
+</html>

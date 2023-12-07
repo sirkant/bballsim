@@ -1,3 +1,5 @@
+import random
+
 class Team:
     def __init__(self, teamName, marketSize):
         self.teamName = teamName
@@ -8,6 +10,8 @@ class Team:
         self.coaching = 0
         self.medical = 0
         self.facilities = 0
+        self.record = 0
+        self.starting_lineup = []
 
     def addPlayer(self, player):
         if len(self.roster) < 15:
@@ -15,6 +19,11 @@ class Team:
             self.calculateTeamHeight()
         # else:
             # print("Roster is full. Cannot add more players.")
+
+    def add_players_to_roster(self, players):
+        for player in players:
+            if player.tid == self.team_id:
+                self.roster.append(player)
 
     def removePlayer(self, player):
         if player in self.roster:
@@ -54,20 +63,36 @@ class Team:
             print(f" - {player.name}: {player.pos}")  # Use current_rating instead of rating
         print(f"Scouting: {self.scouting}, Coaching: {self.coaching}, Medical: {self.medical}, Facilities: {self.facilities}")
 
-    # def get_basketball_team_infos(url):
-    #     try:
-    #         response = requests.get(url)
-    #         response.raise_for_status()  # Will raise an HTTPError if the HTTP request returned an unsuccessful status code
-    #         data = response.json()
-    #
-    #         # Filter out only the basketball information
-    #         basketball_team_infos = {team: info for team, info in data.items() if 'basketball' in info['jersey']}
-    #         return basketball_team_infos
-    #     except requests.RequestException as e:
-    #         print(f"An error occurred while fetching the team information: {e}")
-    #         return {}
+    def rebound_rating(self):
+        rebound_rating = sum([player.current_rating for player in self.starting_lineup.values()]) / len(self.starting_lineup)
+        return rebound_rating
+    
+    def calculate_defense_rating(self):
+        """
+        Calculate the defense rating of the team based on the average of the 'diq', 'drb', 'spd', 'hgt' ratings of the players.
+        """
+        total_rating = 0
+        for player in self.starting_lineup.values():
+            total_rating += (player.ratings['diq'] + player.ratings['drb'] + player.ratings['spd'] + player.ratings['hgt']) / 4
+        return total_rating / len(self.roster)
+    
+    def calculate_rebound_rating(self, team):
+        """
+        Calculate the rebound rating of the team based on the average of the 'drb' and 'orb' ratings of the players.
+        Add a bit of randomness to the rating.
+        """
+        total_rating = 0
+        if team.starting_lineup is None:
+            print(f"No starting lineup found for team {team.teamName}")
+            return 0
+        else:
+            for player in team.starting_lineup.values():
+                total_rating += (player.ratings['reb'] + player.ratings['hgt']) / 2
+            total_rating /= len(team.starting_lineup)
+            print(f"Team Rebounding Rating (drb): {total_rating}")
 
-    # Example usage:
-    # team_infos_url = 'https://raw.githubusercontent.com/zengm-games/zengm/master/src/common/teamInfos.ts'
-    # basketball_team_infos = get_basketball_team_infos(team_infos_url)
-    # print(basketball_team_infos)
+        # Add a random factor to the total rating
+        random_factor = random.uniform(0.8, 1.2)  # Adjust the range as needed
+        total_rating *= random_factor
+        print(f"Rebound Rating for team {team.teamName}: {total_rating}")
+        return total_rating

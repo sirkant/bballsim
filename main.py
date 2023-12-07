@@ -5,6 +5,8 @@ from match import Match
 from databaseManager import DatabaseManager
 from league import League
 import requests
+import constants
+
 
 class Game:
     def __init__(self, current_season):
@@ -29,7 +31,7 @@ class Game:
                 except AttributeError as e:
                     print(f"Error processing player: {player.name}. Missing attribute: {e}")
 
-        self.nba_league = League(league.team_data, self.db_manager, self.current_season)
+        self.nba_league = League(constants.team_data, self.db_manager, self.current_season)
         player_count = self.get_player_count()
         print(f"Number of players in the database: {player_count}")
 
@@ -49,7 +51,6 @@ class Game:
             pass
         raise Exception(f"Failed to retrieve data from URL. Status code: {response.status_code}")
 
-
     def get_player_count(self):
         return self.db_manager.count_rows_in_table("players")
 
@@ -57,3 +58,25 @@ class Game:
         team = self.nba_league.teams[team_id]
         players = self.db_manager.get_players_by_team(team_id, self.current_season)
         return team, players
+
+    def get_player_details(self, player_id):
+        # Iterate through all teams in the league
+        for team in self.nba_league.teams.values():
+            # Iterate through each player in the team's roster
+            for player in team.roster:
+                # Check if the player's ID matches the given player_id
+                if player.id == player_id:
+                    # Return the Player object
+                    return player
+        # Return None or raise an exception if player is not found
+        return None
+
+    def play_match(self, teams):
+        print(teams)
+        print("Teams Type:", type(teams))
+        print(f"Starting function match between: {teams[0].teamName}, {teams[1].teamName}")
+        match = Match(teams)
+        print(match.teams)
+        print(f"Initiating match between: {match.teams[0].teamName}, {match.teams[1].teamName}")
+        match.run()
+        return match

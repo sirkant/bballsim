@@ -1,6 +1,7 @@
 import random
 import requests
 import json
+from constants import team_data
 
 
 class Player:
@@ -13,9 +14,12 @@ class Player:
             self.name = f"{first_name} {last_name}".strip()
 
         # Initialize ratings as a dictionary
-        self.ratings = player_data.get('ratings', [])
-        self.stats = player_data.get('stats', [])
+        self.ratings = player_data.get('ratings', {})
+        self.stats = player_data.get('stats', {})
         self.contract = player_data.get('contract', {})
+        self.match_stats = {'FGM': 0, 'FGA': 0, 'Points': 0,
+                            'Rebounds': 0, 'Assists': 0, 'Steals': 0, 'Blocks': 0}
+        
 
         # Set attributes directly from player_data
         for key in ['id', 'pos', 'hgt', 'weight', 'imgURL', 'college', 'tid']:
@@ -31,11 +35,39 @@ class Player:
         # Handle 'injury' structure, if exists
         self.injury_type = player_data.get('injury', {}).get('type', 'Healthy')
         self.injury_games_remaining = player_data.get('injury', {}).get('gamesRemaining', 0)
+        self.fatigue = 0  # New attribute
+        self.ovr = self.calculate_ovr_rating()
+        #self.teamName = team_data[self.tid][0]
+
 
     def init_ratings_from_db(self, ratings_data):
         for key in ['hgt', 'stre', 'spd', 'jmp', 'endu', 'ins', 'dnk', 'ft', 'fg', 'tp', 'diq', 'oiq', 'drb', 'pss',
                     'reb']:
             self.ratings[key] = ratings_data.get(key, None)
+
+
+    def init_stats_from_db(self, stats_data):
+        for key in ['fg', 'fga', 'fgp', 'tp', 'tpa', 'tpp', 'ft', 'fta', 'ftp', 'orb', 'drb', 'trb', 'ast', 'tov', 'stl',
+                    'blk', 'blkp', 'pf', 'pfd', 'pts']:
+            self.stats[key] = stats_data.get(key, None)
+
+    def calculate_ovr_rating(self):
+        """Calculates the overall rating based on the individual ratings of various attributes.
+        Returns: ovr (float): The overall rating calculated from the sum of individual ratings divided by the number of ratings.
+        """
+        num_ratings = len(self.ratings)
+        if num_ratings == 0:
+            return 0
+
+        total_rating = 0
+        for key in ['hgt', 'stre', 'spd', 'jmp', 'endu', 'ins', 'dnk', 'ft', 'fg', 'tp', 'diq', 'oiq', 'drb', 'pss',
+                    'reb']:
+            if key in self.ratings:
+                total_rating += self.ratings[key]
+
+        ovr_rating = total_rating / num_ratings
+        self.ovr = ovr_rating
+        return ovr_rating
 
     def init_contract_from_db(self, ratings_data):
         for key in ['amount', 'exp', 'rookie']:
@@ -97,3 +129,68 @@ class Player:
         contract_data = db_manager.get_player_contract_from_db(player_id)
         player.contract = contract_data
         return player
+
+    def update_fatigue(self, change):
+        self.fatigue += change
+        self.fatigue = max(0, min(self.fatigue, 100))  # Keep within bounds
+
+    def adjust_ratings_for_fatigue(self):
+        if self.fatigue > 0:
+            fatigue_factor = 1 - (self.fatigue / 100)
+
+    def update_match_stats(self, stat, value):
+        if stat in self.match_stats:
+            self.match_stats[stat] += value
+
+    def update_overall_stats(self):
+        for stat, value in self.match_stats.items():
+            if stat in self.stats:
+                self.stats[stat] += value
+        self.reset_match_stats()
+
+    def reset_match_stats(self):
+        for stat in self.match_stats:
+            self.match_stats[stat] = 0
+
+    def calculate_defense_rating(self):
+        """
+        Calculate the defense rating of the player based on the average of the 'diq', 'drb', 'spd', 'hgt' ratings.
+        """
+        def_rating = (self.ratings['diq'] + self.ratings['drb'] + self.ratings['spd'] + self.ratings['hgt']) / 4
+        return def_rating
+
+def test_calculate_ovr_rating():
+    # Create a player instance with sample ratings
+    player_data = {
+        'ratings': {
+            'hgt': 80,
+            'stre': 70,
+            'spd': 90,
+            'jmp': 80,
+            'endu': 85,
+            'ins': 75,
+            'dnk': 90,
+            'ft': 80,
+            'fg': 85,
+            'tp': 75,
+            'diq': 70,
+            'oiq': 80,
+            'drb': 85,
+            'pss': 90,
+            'reb': 80
+        }
+    }
+    player = Player(player_data)
+
+    # Calculate the overall rating
+    ovr_rating = player.calculate_ovr_rating()
+    def_rating = player.calculate_defense_rating()
+
+    # Compare the calculated rating with the expected value
+    print(team_data)
+    print(ovr_rating)
+    print(f"Player plays for {team_data[0][0]}")
+
+test_calculate_ovr_rating()
+
+

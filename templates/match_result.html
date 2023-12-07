@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Match Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .team-boxscore {
+            padding-left: 20px;
+            padding-top: 20px;
+            margin-bottom: 20px;
+        }
+        .team-name {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .player-stats, .team-stats {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .player-stats th, .player-stats td, .team-stats th, .team-stats td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .player-stats th, .team-stats th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Match Result</h1>
+
+    <!-- Loop through each team and its stats -->
+    {% for team_name, stats in team_stats.items() %}
+        <div class="team-boxscore">
+            <h2 class="team-name">{{ team_name }}</h2>
+            <table class="team-stats">
+                <tr>
+                    <th>FGA</th>
+                    <th>FGM</th>
+                    <th>Rebounds</th>
+                    <th>Assists</th>
+                    <th>Steals</th>
+                    <th>Blocks</th>
+                    <th>TOs</th>
+                    <th>Points</th>
+                    <!-- Add other headers -->
+                </tr>
+                <tr>
+                    <td>{{ stats.FGA }}</td>
+                    <td>{{ stats.FGM }}</td>
+                    <td>{{ stats.Rebounds }}</td>
+                    <td>{{ stats.Assists }}</td>
+                    <td>{{ stats.Steals }}</td>
+                    <td>{{ stats.Blocks }}</td>
+                    <td>{{ stats.TOs }}</td>
+                    <td>{{ stats.Points }}</td>
+                    <!-- Add other stats -->
+                </tr>
+            </table>
+            <!-- Repeat for individual player stats -->
+        </div>
+    {% endfor %}
+
+    <!-- Add more details or navigation as needed -->
+
+</body>
+
+</html>
