@@ -52,35 +52,58 @@ def play_match():
     try:
         teams = random.sample(teams_list, 2)  # Randomly select two teams
         match = Match(teams)
-        match_result = match.run()  # Assuming run method returns final stats
+        match_result = match.run()  # Run the match, which returns final stats
 
-        # Create a dictionary to map team names to their stats
-        stats_dict = {
-            teams[0].teamName: match_result[teams[0].teamName],
-            teams[1].teamName: match_result[teams[1].teamName]
-        }
+        # Create a dictionary to map team names to their stats and player stats
+        stats_dict = {}
+        player_stats_dict = {}
 
-        return render_template('match_result.html', team_stats=stats_dict)
+        for team in teams:
+            team_name = team.teamName
+            stats_dict[team_name] = match_result[team_name]
+
+            # Gather player stats for each team
+            player_stats = {player.name: player.match_stats for player in team.roster}
+            player_stats_dict[team_name] = player_stats
+
+        # Pass the team stats and player stats to the template
+        return render_template('match_result2.html', teams=teams,
+                               team_stats=stats_dict,
+                               player_stats=player_stats_dict,
+                               commentary=match.play_by_play)
     except TypeError as e:
         print("Error selecting teams:", e)
         return "An error occurred in team selection", 500
+
 
 @app.route('/play_match_denver')
 def play_match_denver():
     teams_list = list(game.nba_league.teams.values())
     try:
-        teams = teams_list[7], teams_list[19]  # Randomly select two teams
+        teams = [teams_list[6], teams_list[26]]  # Randomly select two teams
         match = Match(teams)
-        match_result = match.run()  # Assuming run method returns final stats
+        match_result = match.run()  # Run the match, which returns final stats
 
-        # Create a dictionary to map team names to their stats
-        stats_dict = {
-            teams[0].teamName: match_result[teams[0].teamName],
-            teams[1].teamName: match_result[teams[1].teamName]
-        }
+        # Create a dictionary to map team names to their stats and player stats
+        stats_dict = {}
+        player_stats_dict = {}
 
-        return render_template('match_result.html', team_stats=stats_dict)
+        for team in teams:
+            team_name = team.teamName
+            stats_dict[team_name] = match_result[team_name]
+
+            # Gather player stats for each team
+            player_stats = {player.name: player.match_stats for player in team.roster}
+            player_stats_dict[team_name] = player_stats
+
+        # Pass the team stats and player stats to the template
+        return render_template('match_result2.html', teams=teams,
+                               team_stats=stats_dict,
+                               player_stats=player_stats_dict,
+                               commentary=match.play_by_play)
     except TypeError as e:
+        print(teams)
+        print(match_result)
         print("Error selecting teams:", e)
         return "An error occurred in team selection", 500
 

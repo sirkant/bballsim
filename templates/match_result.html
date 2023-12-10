@@ -26,12 +26,23 @@
         .player-stats th, .team-stats th {
             background-color: #f2f2f2;
         }
+
+        .commentary-box {
+            margin: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            height: 300px; /* Adjust height as needed */
+            overflow-y: auto; /* Makes the box scrollable */
+            background-color: #f9f9f9; /* Light background for the box */
+        }
+
     </style>
 </head>
 <body>
     <h1>Match Result</h1>
 
     <!-- Loop through each team and its stats -->
+    <!-- #TODO 1 - Format like an NBA box score -->
     {% for team_name, stats in team_stats.items() %}
         <div class="team-boxscore">
             <h2 class="team-name">{{ team_name }}</h2>
@@ -59,10 +70,47 @@
                     <!-- Add other stats -->
                 </tr>
             </table>
-            <!-- Repeat for individual player stats -->
+ <!-- Player Stats -->
+            <h3>{{ team_name }} Players</h3>
+            {% for player_name, player_stats in player_stats[team_name].items() %}
+                <h4>{{ player_name }}</h4>
+                <table class="player-stats">
+                    <tr>
+                        <th>FGA</th>
+                        <th>FGM</th>
+                        <th>Rebounds</th>
+                        <th>Assists</th>
+                        <th>Steals</th>
+                        <th>Blocks</th>
+                        <th>TOs</th>
+                        <th>Points</th>
+                        <!-- Add other headers -->
+                    </tr>
+                    <tr>
+                        <td>{{ player_stats['FGA'] }}</td>
+                        <td>{{ player_stats['FGM'] }}</td>
+                        <td>{{ player_stats['Rebounds'] }}</td>
+                        <td>{{ player_stats['Assists'] }}</td>
+                        <td>{{ player_stats['Steals'] }}</td>
+                        <td>{{ player_stats['Blocks'] }}</td>
+                        <td>{{ player_stats['TOs'] }}</td>
+                        <td>{{ player_stats['Points'] }}</td>
+                        <!-- Add other player stats -->
+                    </tr>
+                </table>
+            {% endfor %}
         </div>
     {% endfor %}
 
+    <!-- Play-by-Play Commentary Box -->
+    <div class="commentary-box">
+        <h3>Play-by-Play Commentary</h3>
+        <ul>
+            {% for comment in commentary|reverse %}
+                <li>{{ comment }}</li>
+            {% endfor %}
+        </ul>
+    </div>
     <!-- Add more details or navigation as needed -->
 
 </body>

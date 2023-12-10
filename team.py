@@ -78,21 +78,37 @@ class Team:
     
     def calculate_rebound_rating(self, team):
         """
-        Calculate the rebound rating of the team based on the average of the 'drb' and 'orb' ratings of the players.
+        Calculate the rebound rating of the team based on the average of the 'drb',
+        'reb' and 'hgt' ratings of the players.
         Add a bit of randomness to the rating.
         """
+        print("Now on calculate_rebound_rating")
         total_rating = 0
         if team.starting_lineup is None:
             print(f"No starting lineup found for team {team.teamName}")
             return 0
         else:
             for player in team.starting_lineup.values():
-                total_rating += (player.ratings['reb'] + player.ratings['hgt']) / 2
-            total_rating /= len(team.starting_lineup)
-            print(f"Team Rebounding Rating (drb): {total_rating}")
+                if player is None or player.ratings is None:
+                    print(f"Player or ratings not found in starting lineup of {team.teamName}")
+                    continue  # Skip to the next player
+                try:
+                    print(f"{player.name} has DRB:{player.ratings['drb']}, HGT: {player.ratings['hgt']} "
+                          f"and REB: {player.ratings['reb']}")
+                    total_rating += (player.ratings['reb'] + player.ratings['hgt'] + player.ratings['drb']) / 3
+                except KeyError as e:
+                    print(f"Error in player ratings for {player.name}: {e}")
+                    continue  # Skip to the next player
+
+            if len(team.starting_lineup) > 0:
+                total_rating /= len(team.starting_lineup)
+                print(f"Team Rebounding Rating (drb): {total_rating}")
+            else:
+                print(f"No valid players in starting lineup for {team.teamName}")
+                return 0
 
         # Add a random factor to the total rating
-        random_factor = random.uniform(0.8, 1.2)  # Adjust the range as needed
+        random_factor = random.uniform(0.6, 1.4)  # Adjust the range as needed
         total_rating *= random_factor
         print(f"Rebound Rating for team {team.teamName}: {total_rating}")
         return total_rating

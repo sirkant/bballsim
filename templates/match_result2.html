@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Match Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .match-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .team-boxscore {
+            margin-bottom: 20px;
+        }
+        .team-name {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .player-stats, .team-stats {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .player-stats th, .player-stats td, .team-stats th, .team-stats td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .player-stats th, .team-stats th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .player-stats td:first-child {
+            width: 20%;
+            text-align: left;
+        }
+        .player-stats td {
+            width: 10%;
+        }
+        .commentary-box {
+            margin: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            height: 300px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Match Result: {{ teams[0].teamName }} {{ team_stats[teams[0].teamName].Points }} vs. {{ teams[1].teamName }} {{ team_stats[teams[1].teamName].Points }}</h1>
+    <!-- #TODO 1 - Format like an NBA box score -->
+    <!-- #TODO 2 - Track 3pts -->
+    <!-- #TODO 3 - Add FG% -->
+    <!-- #TODO 4 - Add FT and fouls -->
+    <!-- #TODO 5 - Add +/- -->
+    <!-- Loop through each team and its stats -->
+
+    {% for team_name, stats in team_stats.items() %}
+        <div class="team-boxscore">
+            <h2 class="team-name">{{ team_name }}</h2>
+            <table class="player-stats">
+        <thead>
+            <tr>
+                <th>Player</th>
+                <th>Minutes</th>
+                <th>FG</th>
+                <th>Rebounds</th>
+                <th>Assists</th>
+                <th>Steals</th>
+                <th>Blocks</th>
+                <th>TOs</th>
+                <th>Points</th>
+                <!-- Add more headers as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for player_name, player_stats in player_stats[team_name].items() %}
+                <tr>
+                    <td>{{ player_name }}</td>
+                    <td>{{ player_stats['Minutes'] }}</td>
+                    <td>{{ player_stats['FGM'] }}-{{ player_stats['FGA'] }}</td>
+                    <td>{{ player_stats['Rebounds'] }}</td>
+                    <td>{{ player_stats['Assists'] }}</td>
+                    <td>{{ player_stats['Steals'] }}</td>
+                    <td>{{ player_stats['Blocks'] }}</td>
+                    <td>{{ player_stats['TOs'] }}</td>
+                    <td>{{ player_stats['Points'] }}</td>
+                    <!-- Add more player stats as needed -->
+                </tr>
+            {% endfor %}
+            <tr>
+                <td> <b>{{ team_name }} </b></td>
+                <td></td>
+                <td>{{ stats.FGM }}-{{ stats.FGA }}</td>
+                <td>{{ stats.Rebounds }}</td>
+                <td>{{ stats.Assists }}</td>
+                <td>{{ stats.Steals }}</td>
+                <td>{{ stats.Blocks }}</td>
+                <td>{{ stats.TOs }}</td>
+                <td>{{ stats.Points }}</td>
+                        <!-- Add more player stats as needed -->
+            </tr>
+            <tr>
+                <td> </td>
+                <td></td>
+                <td>{{ (stats.FGM / stats.FGA * 100) | round(2) }}%</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+        </table>
+        </div>
+    {% endfor %}
+
+    <!-- Play-by-Play Commentary Box -->
+    <div class="commentary-box">
+        <h3>Play-by-Play Commentary</h3>
+        <ul>
+            {% for comment in commentary|reverse %}
+                <li>{{ comment }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <!-- Add more details or navigation as needed -->
+
+</body>
+
+</html>

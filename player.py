@@ -18,7 +18,7 @@ class Player:
         self.stats = player_data.get('stats', {})
         self.contract = player_data.get('contract', {})
         self.match_stats = {'FGM': 0, 'FGA': 0, 'Points': 0,
-                            'Rebounds': 0, 'Assists': 0, 'Steals': 0, 'Blocks': 0}
+                            'Rebounds': 0, 'Assists': 0, 'Steals': 0, 'Blocks': 0, 'TOs': 0}
         
 
         # Set attributes directly from player_data
